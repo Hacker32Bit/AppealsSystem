@@ -18,7 +18,7 @@ export const createAppeal = (req: Request, res: Response, next: NextFunction) =>
 // Read all appeals(With optional startDate and endDate)
 export const getAppeals = (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { startDate, endDate } = req.body as { startDate?: string; endDate?: string };
+        const { startDate, endDate } = req.body as { startDate?: string; endDate?: string } || {};
         let result = appeals;
 
         const parsedStart = parseDate(startDate);
