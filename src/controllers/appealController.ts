@@ -111,16 +111,35 @@ export const cancelAppeal = (req: Request, res: Response, next: NextFunction) =>
 // Cancel all appeals(Wchich have Working status)
 export const cancelAllAppeals = (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { reason } = req.body
-        const appealIndex = appeals.findIndex((i) => i.status == "Working");
-        if (appealIndex === -1) {
-            res.status(404).json({ message: 'Appeals not found' });
+        const { reason } = req.body;
+
+        let found = false;
+        const updatedAppeals = appeals.map(appeal => {
+            if (appeal.status === "Working") {
+                found = true;
+                return {
+                    ...appeal,
+                    status: "Canceled",
+                    reason,
+                    last_hit: new Date()
+                };
+            }
+            return appeal;
+        });
+
+        if (!found) {
+            res.status(404).json({ message: 'No working appeals found' });
             return;
         }
-        appeals[appealIndex].status = "Canceled";
-        appeals[appealIndex].reason = reason
-        appeals[appealIndex].last_hit = new Date()
-        res.json(appeals[appealIndex]);
+
+        // Update the original array
+        appeals.length = 0;
+        appeals.push(...updatedAppeals);
+
+        res.json({
+            message: 'All working appeals canceled',
+            canceled: updatedAppeals.filter(a => a.status === 'Canceled')
+        });
     } catch (error) {
         next(error);
     }
